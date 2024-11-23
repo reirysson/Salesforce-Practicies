@@ -1,0 +1,13 @@
+<template>
+    <lightning-card>
+        <div class="slds-p-bottom_large slds-p-left_large full-width">
+            <lightning-record-edit-form object-api-name="Account" record-id={recordId} onsuccess={handleSuccess} onsubmit={handleSubmit}>
+                <lightning-input-field field-name="Name"></lightning-input-field>
+                <lightning-input-field field-name="AccountNumber"></lightning-input-field>
+                <lightning-input-field field-name="Type"></lightning-input-field>
+                <lightning-button type="submit" name="submit" label="Create Account">
+                </lightning-button>
+            </lightning-record-edit-form>
+        </div>
+    </lightning-card>
+</template>
