@@ -4,12 +4,17 @@
  * @author: Reirysson Costa
  */
 public with sharing class AccountFilter {
+
+    private String accountPartnerRecordTypeId = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName().get('Partner').getRecordTypeId();
+    private String accountFinalConsumerRecordTypeId = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName().get('FinalConsumer').getRecordTypeId();
     
     public List<Account> byChangedAccountNumber( List<Account> newAccounts, Map<Id,Account> oldAccounts ) {
 
         List<Account> accountsChanged = new List<Account>();
 
         for( Account account : newAccounts){
+
+            if( account.AccountNumber == null ) continue;
 
             Account oldAccount = oldAccounts.get(account.Id);
 
@@ -19,5 +24,19 @@ public with sharing class AccountFilter {
         }
 
         return accountsChanged;
+    }
+
+    public Map<String, Account> byRecordTypeDeveloperName( List<Account> newAccounts ) {
+
+        Map<String, Account> accountsByRecordTypeDeveloperName = new Map<String, Account>();
+
+        for( Account account : newAccounts){
+
+            if( account.RecordTypeId == accountPartnerRecordTypeId) accountsByRecordTypeDeveloperName.put('Partner', account);
+
+            if( account.RecordTypeId == accountFinalConsumerRecordTypeId) accountsByRecordTypeDeveloperName.put('FinalConsumer', account);
+        }
+        
+        return accountsByRecordTypeDeveloperName;
     }
 }
