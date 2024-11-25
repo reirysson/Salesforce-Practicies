@@ -10,6 +10,7 @@ public with sharing class AccountHandler extends TriggerHandler {
 	private Map<Id, Account> tOldMap;
     
 	private AccountFilter filter;
+	private AccountBO accountBO;
 
     public AccountHandler() {
         this.tNew = (List<Account>) Trigger.new;
@@ -18,6 +19,7 @@ public with sharing class AccountHandler extends TriggerHandler {
 		this.tOldMap = (Map<Id, Account>) Trigger.oldMap;
 
         this.filter = new AccountFilter();
+        this.accountBO = new AccountBO();
     }
 
     public override void beforeInsert() {
@@ -26,6 +28,16 @@ public with sharing class AccountHandler extends TriggerHandler {
 
     public override void beforeUpdate() {
         validateAccountNumber();
+    }
+
+    public override void afterInsert() {
+        createOpportunityPartner();
+        createTaskAccountFinalConsumer();
+    }
+
+    public override void afterUpdate() {
+        createOpportunityPartner();
+        createTaskAccountFinalConsumer();
     }
 
     private void validateAccountNumber(){
@@ -52,6 +64,21 @@ public with sharing class AccountHandler extends TriggerHandler {
                 else account.addError('Número do cliente é inválido');
             }
         }
+    }
 
+    public void createOpportunityPartner(){
+        Map<String, List<Account>> accountsByRecordType = this.filter.byRecordTypeDeveloperName( this.tNew );
+
+        if( !accountsByRecordType.containsKey('Partner') ) return;
+
+        this.accountBO.createOpportunityPartner(accountsByRecordType);
+    }
+
+    public void createTaskAccountFinalConsumer(){
+        Map<String, List<Account>> accountsByRecordType = this.filter.byRecordTypeDeveloperName( this.tNew );
+
+        if( !accountsByRecordType.containsKey('FinalConsumer') ) return;
+
+        this.accountBO.createTaskAccountFinalConsumer(accountsByRecordType);
     }
 }
