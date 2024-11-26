@@ -6,10 +6,12 @@ public with sharing class AccountBO {
 
     OpportunityRepository opportunityRepository;
     TaskRepository taskRepository;
+    AccountEnricher enricher;
 
     public AccountBO(){
         this.opportunityRepository = new OpportunityRepository();
         this.taskRepository = new TaskRepository();
+        this.enricher = new AccountEnricher();
     }
     
     public void createOpportunityPartner( Map<String, List<Account>> accountsPartner ){
@@ -56,6 +58,41 @@ public with sharing class AccountBO {
         } catch (Exception e){
             throw e;
         }
+    }
+
+    public List<Account> inactiveOldAccountsWithoutTasksAndOpportunities(List<Account> accounts) {
+
+        if ( accounts.isEmpty() ) return new List<Account>();
+
+        List<Account> accountsToInactive = new List<Account>();
+
+        for ( Account account : accounts ) {
+
+            if ( this.hasOldTasksAndOpportunities(account) ) accountsToInactive.add( account );
+        }
+
+        return this.enricher.withInactive( accountsToInactive );
+    }
+
+    private Boolean hasOldTasksAndOpportunities( Account account ) {
+
+        Boolean hasOldTasksAndOpportunities = false;
+
+        if ( account.Tasks.isEmpty() || account.Opportunities.isEmpty() ) return hasOldTasksAndOpportunities;
+
+        for( Task task : account.Tasks ){
+            
+            if( task.ActivityDate > System.today().addDays(90) ) hasOldTasksAndOpportunities = true;
+        }
+
+        for( Opportunity Opportunity : account.Opportunities ){
+
+            if( Opportunity.StageName == 'Closed Won' && Opportunity.CloseDate > System.today().addDays(120) ) hasOldTasksAndOpportunities = true;
+
+            if( Opportunity.StageName == 'Negotiation/Review') hasOldTasksAndOpportunities = true;
+        }
+
+        return hasOldTasksAndOpportunities;
     }
 
 }
