@@ -42,7 +42,7 @@ public with sharing class AccountHandler extends TriggerHandler {
 
     private void validateAccountNumber(){
 
-        List<Account> acountsChangedAccountNumber = this.filter.byChangedAccountNumber( this.tNew, this.tOldMap );
+        List<Account> acountsChangedAccountNumber = this.filter.accountWithAccountNumber( this.tNew );
 
         if( acountsChangedAccountNumber.isEmpty() ) return;
 
