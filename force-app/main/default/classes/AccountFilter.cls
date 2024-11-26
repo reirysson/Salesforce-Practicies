@@ -8,33 +8,39 @@ public with sharing class AccountFilter {
     private String accountPartnerRecordTypeId = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName().get('Partner').getRecordTypeId();
     private String accountFinalConsumerRecordTypeId = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName().get('FinalConsumer').getRecordTypeId();
     
-    public List<Account> byChangedAccountNumber( List<Account> newAccounts, Map<Id,Account> oldAccounts ) {
+    public List<Account> accountWithAccountNumber( List<Account> newAccounts ) {
 
-        List<Account> accountsChanged = new List<Account>();
+        List<Account> accountWithAccountNumber = new List<Account>();
 
         for( Account account : newAccounts){
 
             if( account.AccountNumber == null ) continue;
-
-            Account oldAccount = oldAccounts.get(account.Id);
-
-            if( account.AccountNumber == oldAccount.AccountNumber ) continue;
             
-            accountsChanged.add(account);
+            accountWithAccountNumber.add(account);
         }
 
-        return accountsChanged;
+        return accountWithAccountNumber;
     }
 
-    public Map<String, Account> byRecordTypeDeveloperName( List<Account> newAccounts ) {
+    public Map<String, List<Account>> byRecordTypeDeveloperName( List<Account> newAccounts ) {
 
-        Map<String, Account> accountsByRecordTypeDeveloperName = new Map<String, Account>();
+        Map<String, List<Account>> accountsByRecordTypeDeveloperName = new Map<String, List<Account>>();
 
         for( Account account : newAccounts){
 
-            if( account.RecordTypeId == accountPartnerRecordTypeId) accountsByRecordTypeDeveloperName.put('Partner', account);
+            if (account.RecordTypeId == accountPartnerRecordTypeId) {
+                if (!accountsByRecordTypeDeveloperName.containsKey('Partner')) {
+                    accountsByRecordTypeDeveloperName.put('Partner', new List<Account>());
+                }
+                accountsByRecordTypeDeveloperName.get('Partner').add(account);
+            }
 
-            if( account.RecordTypeId == accountFinalConsumerRecordTypeId) accountsByRecordTypeDeveloperName.put('FinalConsumer', account);
+            if (account.RecordTypeId == accountFinalConsumerRecordTypeId) {
+                if (!accountsByRecordTypeDeveloperName.containsKey('FinalConsumer')) {
+                    accountsByRecordTypeDeveloperName.put('FinalConsumer', new List<Account>());
+                }
+                accountsByRecordTypeDeveloperName.get('FinalConsumer').add(account);
+            }
         }
         
         return accountsByRecordTypeDeveloperName;
